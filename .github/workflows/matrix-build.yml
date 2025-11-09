@@ -1,0 +1,53 @@
+name: Multi-Platform Matrix Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  matrix-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14, 16, 18]
+        include:
+          - node-version: 14
+            variant: node14
+          - node-version: 16
+            variant: node16
+          - node-version: 18
+            variant: node18
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: matrix-e92d128
+        run: |
+          echo "Building for Node.js version ${{ matrix.node-version }}"
+          echo "Variant: ${{ matrix.variant }}"
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      
+      - name: Generate build artifact
+        run: |
+          mkdir -p build
+          echo "Build output for Node.js ${{ matrix.node-version }}" > build/output.txt
+          echo "Timestamp: $(date)" >> build/output.txt
+          echo "Variant: ${{ matrix.variant }}" >> build/output.txt
+          node --version >> build/output.txt
+          npm --version >> build/output.txt
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-e92d128-${{ matrix.variant }}
+          path: build/output.txt
+          retention-days: 1
+
